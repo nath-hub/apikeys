@@ -149,8 +149,8 @@ class ApiKeysController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
-     *                 @OA\Property(property="public_key", type="string", example="pk_test_abcd1234efgh5678ijkl9012mnop3456"),
-     *                 @OA\Property(property="private_key", type="string", example="sk_test_abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef9012"),
+     *                 @OA\Property(property="public_key", type="string", example="example_keys"),
+     *                 @OA\Property(property="private_key", type="string", example="example_keys"),
      *                 @OA\Property(property="environment", type="string", example="test"),
      *                 @OA\Property(property="created_at", type="string", format="date-time")
      *             ),

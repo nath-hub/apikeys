@@ -216,11 +216,11 @@
                                             "properties": {
                                                 "public_key": {
                                                     "type": "string",
-                                                    "example": "pk_test_abcd1234efgh5678ijkl9012mnop3456"
+                                                    "example": "example_keys"
                                                 },
                                                 "private_key": {
                                                     "type": "string",
-                                                    "example": "sk_test_abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef9012"
+                                                    "example": "example_keys"
                                                 },
                                                 "environment": {
                                                     "type": "string",
