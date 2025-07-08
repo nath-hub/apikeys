@@ -1,0 +1,341 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Service API",
+        "description": "API de gestion des utilisateurs",
+        "contact": {
+            "email": "n.taffot@elyft.tech"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8002",
+            "description": "User Service Server"
+        }
+    ],
+    "paths": {
+        "/api/apikeys": {
+            "get": {
+                "tags": [
+                    "API Keys"
+                ],
+                "summary": "Lister les clés API de l'utilisateur",
+                "description": "Récupère toutes les clés API de l'utilisateur connecté (sans les valeurs des clés privées)",
+                "operationId": "4e165990a4e590904b4fd056807a11f2",
+                "parameters": [
+                    {
+                        "name": "environment",
+                        "in": "query",
+                        "description": "Filtrer par environnement",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "test",
+                                "live",
+                                "sandbox"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrer par statut",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "inactive",
+                                "revoked",
+                                "expired"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des clés API",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Clés API récupérées"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "key_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "key_type": {
+                                                        "type": "string"
+                                                    },
+                                                    "environment": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "last_used_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "usage_count": {
+                                                        "type": "integer"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "masked_key": {
+                                                        "type": "string",
+                                                        "example": "pk_test_****...****3456"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/apikeys/generate": {
+            "post": {
+                "tags": [
+                    "API Keys"
+                ],
+                "summary": "Créer une nouvelle paire de clés API",
+                "description": "Génère une paire de clés API (publique/privée) pour l'utilisateur connecté. Les clés sont envoyées par email et retournées dans la réponse (une seule fois).",
+                "operationId": "9bdc52d7fe2d23b71c8b2a7684e4b0d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Clés de production"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Clés pour le site e-commerce principal"
+                                    },
+                                    "environment": {
+                                        "type": "string",
+                                        "enum": [
+                                            "test",
+                                            "live",
+                                            "sandbox"
+                                        ],
+                                        "example": "test"
+                                    },
+                                    "permissions": {
+                                        "properties": {
+                                            "payments": {
+                                                "properties": {
+                                                    "create": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "read": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "cancel": {
+                                                        "type": "boolean",
+                                                        "example": false
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "limits": {
+                                                "properties": {
+                                                    "max_amount_per_transaction": {
+                                                        "type": "integer",
+                                                        "example": 50000
+                                                    },
+                                                    "max_amount_per_day": {
+                                                        "type": "integer",
+                                                        "example": 500000
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "ip_whitelist": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "192.168.1.1",
+                                            "10.0.0.0/24"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Clés API créées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Clés API créées avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "public_key": {
+                                                    "type": "string",
+                                                    "example": "pk_test_abcd1234efgh5678ijkl9012mnop3456"
+                                                },
+                                                "private_key": {
+                                                    "type": "string",
+                                                    "example": "sk_test_abcd1234efgh5678ijkl9012mnop3456qrst7890uvwx1234yzab5678cdef9012"
+                                                },
+                                                "environment": {
+                                                    "type": "string",
+                                                    "example": "test"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "warning": {
+                                            "type": "string",
+                                            "example": "⚠️ IMPORTANT: Votre clé privée ne sera plus jamais affichée. Sauvegardez-la maintenant !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/apikeys/{id}/delete": {
+            "delete": {
+                "tags": [
+                    "API Keys"
+                ],
+                "summary": "Révoquer une clé API",
+                "description": "Révoque définitivement une clé API. Cette action est irréversible.",
+                "operationId": "ee4c046adc529e4b50b1caf203194add",
+                "parameters": [
+                    {
+                        "name": "keyId",
+                        "in": "path",
+                        "description": "ID de la clé API à révoquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "example": "Clé compromise"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Clé API révoquée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Clé API révoquée avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Clé API non trouvée"
+                    },
+                    "403": {
+                        "description": "Non autorisé à révoquer cette clé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "API Keys",
+            "description": "Gestion des clés API pour l'authentification"
+        }
+    ]
+}
