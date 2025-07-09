@@ -68,7 +68,7 @@ jobs:
           password: ${{ secrets.PASSWORD_AGGREGATOR }} # FTP password
           protocol: ftp
           port: 21
-          local-dir: apikeys/           # 📤 le dossier que tu veux envoyer
+          local-dir: ./           # 📤 le dossier que tu veux envoyer
           server-dir: /apikeys/         # 📥 dossier cible sur le serveur
           exclude: |
             **/.git*
