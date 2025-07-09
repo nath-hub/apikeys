@@ -1,0 +1,79 @@
+name: Deploy Laravel Project to o2switch
+
+on:
+  push:
+    branches:
+      - main          # Déclenche le déploiement lors d'un push sur la branche develop
+
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Install Dependencies
+        run: composer install --optimize-autoloader  --no-dev  --prefer-dist --no-scripts
+
+      - name: Config Clearing
+        run: php artisan config:clear
+
+      - name: Cache Clearing
+        run: php artisan cache:clear
+
+      - name: Generate storage link
+        run: php artisan storage:link
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      # - name: Upload files via FTP
+      #   if: github.ref == 'refs/heads/develop'
+      #   uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      #   with:
+      #     server: ${{ secrets.FTP_SERVER }}
+      #     username: ${{ secrets.FTP_USERNAME }} # FTP username
+      #     password: ${{ secrets.FTP_PASSWORD }} # FTP password
+      #     protocol: ftp
+      #     port: 21
+      #     local-dir: ./
+      #     server-dir: develop/
+      #     exclude: |
+      #       **/.git*
+      #       **/.git*/**
+      #       **/node_modules/**
+      #       **/vendor/**
+      #       **/public/**
+      #       .htaccess
+      #       cd public
+      #       if [ -d "storage" ]; then
+      #         rmdir storage
+      #       fi
+      #       quit
+      #       END_SCRIPT
+
+      - name: Sync files to Production Server
+        if: github.ref == 'refs/heads/main'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOTE_NAME_AGGREGATOR }}
+          username: ${{ secrets.USERNAME_AGGREGATOR }} # FTP username
+          password: ${{ secrets.PASSWORD_AGGREGATOR }} # FTP password
+          protocol: ftp
+          port: 21
+          local-dir: apikeys/           # 📤 le dossier que tu veux envoyer
+          server-dir: /apikeys/         # 📥 dossier cible sur le serveur
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/vendor/**
+            .env
+            .htaccess
