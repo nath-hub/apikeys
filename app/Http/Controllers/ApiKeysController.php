@@ -19,6 +19,7 @@ class ApiKeysController extends Controller
 
     public function __construct(private ApiKeyService $apiKeyService) {}
 
+    //controle
 
     /**
      * @OA\Get(
