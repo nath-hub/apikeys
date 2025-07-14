@@ -44,7 +44,7 @@ jobs:
           protocol: ftp
           port: 21
           local-dir: ./           # 📤 le dossier que tu veux envoyer
-          server-dir: /apikeys/         # 📥 dossier cible sur le serveur
+          server-dir: /         # 📥 dossier cible sur le serveur
           exclude: |
             **/.git*
             **/.git*/**
