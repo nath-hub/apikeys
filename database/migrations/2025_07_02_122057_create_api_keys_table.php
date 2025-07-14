@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('key_hash');
 
             // Relations
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('entreprise_id')->constrained()->onDelete('cascade');
+            $table->string('user_id');
+            $table->string('entreprise_id');
 
             // Types et environnements
             $table->enum('key_type', ['public', 'private']);
@@ -45,9 +45,9 @@ return new class extends Migration
 
             // Audit
             $table->timestamps();
-            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->datetime('created_by')->nullable();
             $table->timestamp('revoked_at')->nullable();
-            $table->foreignId('revoked_by')->nullable()->constrained('users');
+            $table->dateTime('revoked_by')->nullable();
             $table->text('revocation_reason')->nullable();
 
             // Index
