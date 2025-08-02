@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApiKeys;
-use App\Http\Controllers\Controller; 
+use App\Http\Controllers\Controller;
 use App\Http\Services\ApiKeyService;
+use App\Http\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Tag(
@@ -17,9 +21,10 @@ use Illuminate\Http\Request;
 class ApiKeysController extends Controller
 {
 
-    public function __construct(private ApiKeyService $apiKeyService) {}
+    public function __construct(private ApiKeyService $apiKeyService, private UserService $userService)
+    {
+    }
 
-    //controle
 
     /**
      * @OA\Get(
@@ -67,8 +72,7 @@ class ApiKeysController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ApiKeys::where('user_id', $request->user()->id)
-            ->with(['creator', 'revoker']);
+        $query = ApiKeys::where('user_id', $request->user()->id);
 
         if ($request->has('environment')) {
             $query->where('environment', $request->environment);
@@ -92,16 +96,22 @@ class ApiKeysController extends Controller
                 'usage_count' => $key->usage_count,
                 'created_at' => $key->created_at,
                 'expires_at' => $key->expires_at,
-                'masked_key' => $this->maskApiKey($key->key_type, $key->environment),
                 'permissions' => $key->permissions,
-                'ip_whitelist' => $key->ip_whitelist,
             ];
         });
 
-        return response()->json([
-            'message' => 'Clés API récupérées',
-            'data' => $data
-        ]);
+        if ($data) {
+            return response()->json([
+                'message' => 'Clés API récupérées',
+                'data' => $data
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Aucune clés API récupérées'
+            ]);
+        }
+
+
     }
 
     /**
@@ -170,16 +180,18 @@ class ApiKeysController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'nullable|string|max:100',
-            'description' => 'nullable|string|max:500',
+            'name' => 'required|string|max:100',
+            'description' => 'required|string|max:500',
             'environment' => 'required|in:test,live,sandbox',
-            'permissions' => 'nullable|array',
-            'ip_whitelist' => 'nullable|array',
+            'permissions' => 'required|array',
+            'ip_whitelist' => 'required|array',
             'ip_whitelist.*' => 'ip',
+            'entreprise_id' => 'required|string|exists:entreprises,id'
         ]);
 
         $user = $request->user();
-        $company = $user->company; // Assuming relationship exists
+
+        $company = $this->userService->getUserCompany(); // Assuming relationship exists
 
         $result = $this->apiKeyService->createKeyPair($user, $company, $request->all());
 
@@ -195,7 +207,7 @@ class ApiKeysController extends Controller
         ], 201);
     }
 
-   
+
     /**
      * @OA\Delete(
      *     path="/api/apikeys/{id}/delete",
@@ -226,20 +238,33 @@ class ApiKeysController extends Controller
      *     @OA\Response(response=403, description="Non autorisé à révoquer cette clé")
      * )
      */
-    public function destroy(Request $request, string $keyId): JsonResponse
+    public function destroy(Request $request, string $keyId)
     {
-        $apiKey = ApiKeys::where('key_id', $keyId)
-            ->where('user_id', $request->user()->id)
+
+        $request->validate([
+            'reason' => 'required|string'
+        ]);
+
+        $apiKey = ApiKeys::where('id', $keyId)
+            // ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$apiKey) {
-            return response()->json(['message' => 'Clé API non trouvée'], 404);
+        $user = $request->user();
+
+        if ($user->id !== $apiKey->user_id) {
+            return response()->json(['message' => 'Vous n\'avez pas le droit de révoquer la clé', 'statut' => 401], 401);
+
         }
+
+        if (!$apiKey) {
+            return response()->json(['message' => 'Clé API non trouvée', 'status' => 404], 404);
+        }
+ 
 
         $success = $this->apiKeyService->revokeKey(
             $keyId,
-            $request->user(),
-            $request->input('reason')
+            $user,
+            $request->input('reason'), $apiKey
         );
 
         if (!$success) {
@@ -249,8 +274,176 @@ class ApiKeysController extends Controller
         return response()->json(['message' => 'Clé API révoquée avec succès']);
     }
 
-    private function maskApiKey(string $keyType, string $environment): string
+
+
+    public function updateKey(Request $request)
     {
-        return "{$keyType}_{$environment}_****...****" . substr(str_repeat('*', 8), 0, 4);
+
+        $request->validate([
+            'id' => 'required|string|exists:api_keys,id'
+        ]);
+
+        // Récupérer les informations de la requête
+        $ipAddress = $request->ip();
+        $domain = $request->getHost();
+
+
+        $result = $this->apiKeyService->updateKeyUsage($request->id, $ipAddress, $domain);
+
+        if ($result) {
+            return response()->json(['message' => 'Clé API a jour', 'status' => 200], 200);
+        } else {
+            return response()->json(['message' => 'Tentative d\'utilisation d\'une clé API inexistante ou inactive', 'status' => 400], 400);
+        }
+
+    }
+
+
+    public function verifyKeys(Request $request)
+    {
+        $validator = $request->validate([
+            'public_key' => 'required|string', //|exists:api_keys,key_id',
+            'private_key' => 'required|string',
+            'environment' => 'required|in:test,live,sandbox',
+            'uuid' => 'required|uuid'
+        ]);
+
+        try {
+            // 1. Trouver la clé publique
+            $publicApiKey = ApiKeys::where('key_id', $request->public_key)
+                ->where('key_type', 'public')
+                ->where('environment', $request->environment)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$publicApiKey) {
+                return response()->json([
+                    'valid' => false,
+                    'error' => 'Invalid public key',
+                    'code' => 'INVALID_PUBLIC_KEY',
+                    'status' => 4001
+                ]);
+            }
+
+            // 2. Trouver la clé privée correspondante
+            $privateApiKey = ApiKeys::where('user_id', $publicApiKey->user_id)
+                ->where('key_type', 'private')
+                ->where('key_id', $request->private_key)
+                ->where('environment', $request->environment)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$privateApiKey) {
+                return response()->json([
+                    'valid' => false,
+                    'error' => 'Invalid private key',
+                    'code' => 'INVALID_PRIVATE_KEY',
+                    'status' => 4002
+                ]);
+            }
+
+            
+            // 4. Vérifier les permissions pour l'action demandée
+            $permissions = $publicApiKey->permissions ?? $this->getDefaultPermissions();
+            
+            if ($request->action && !$this->checkActionPermission($permissions, $request->action)) {
+                return response()->json([
+                    'valid' => false,
+                    'error' => 'Action not permitted',
+                    'code' => 'ACTION_NOT_PERMITTED',
+                    'status' => 403
+                ]);
+            }
+
+            // 5. Vérifier l'expiration (si applicable)
+            if ($publicApiKey->expires_at && $publicApiKey->expires_at->isPast()) {
+                // Marquer comme expiré
+                $publicApiKey->update(['status' => 'expired']);
+                
+                return response()->json([
+                    'valid' => false,
+                    'error' => 'API key expired',
+                    'code' => 'KEY_EXPIRED',
+                    'status' => 4003
+                ]);
+            }
+             
+            // 6. Enregistrer l'utilisation (pour les stats et rate limiting) 
+
+            return response()->json([
+                'valid' => true,
+                'user_id' => $publicApiKey->user_id,
+                'key_id' => $publicApiKey->key_id,
+                'permissions' => $permissions,
+                'environment' => $publicApiKey->environment,
+                'rate_limit_remaining' => $this->getRemainingRateLimit($publicApiKey)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('API key verification error', [
+                'error' => $e->getMessage(),
+                'public_key' => $request->public_key
+            ]);
+
+            return response()->json([
+                'valid' => false,
+                'error' => 'Verification error',
+                'code' => 'VERIFICATION_ERROR',
+                'status' => 500
+            ], 500);
+        }
+    }
+
+    private function checkActionPermission(array $permissions, string $action): bool
+    {
+        $parts = explode('.', $action);
+        if (count($parts) !== 2) {
+            return false;
+        }
+
+        [$resource, $operation] = $parts;
+        return isset($permissions[$resource][$operation]) && $permissions[$resource][$operation] === true;
+    }
+
+   
+ 
+    private function getRemainingRateLimit(ApiKeys $apiKey): int
+    {
+        // Implémentation simple - à adapter selon vos besoins
+        $dailyLimit = 1000; // Par exemple
+        $usedToday = DB::table('api_key_usage_logs')
+            ->where('public_key_id', $apiKey->public_key_id)
+            ->whereDate('created_at', today())
+            ->count();
+
+        return max(0, $dailyLimit - $usedToday);
+    }
+
+    private function getDefaultPermissions(): array
+    {
+        return [
+            'payments' => [
+                'create' => true,
+                'read' => true,
+                'update' => false,
+                'cancel' => true
+            ],
+            'refunds' => [
+                'create' => true,
+                'read' => true
+            ],
+            'webhooks' => [
+                'manage' => false
+            ],
+            'reports' => [
+                'access' => true,
+                'export' => false
+            ],
+            'limits' => [
+                'max_amount_per_transaction' => 100000,
+                'max_amount_per_day' => 1000000,
+                'allowed_currencies' => ['XAF', 'EUR', 'USD']
+            ]
+        ];
     }
 }

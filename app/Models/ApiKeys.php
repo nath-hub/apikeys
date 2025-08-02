@@ -11,12 +11,14 @@ class ApiKeys extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'key_id',
-        'key_hash',  
-         
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $guarded = [
+        'id'
     ];
-     protected $casts = [
+    protected $casts = [
         'permissions' => 'array',
         'ip_whitelist' => 'array',
         'domain_whitelist' => 'array',
@@ -25,12 +27,23 @@ class ApiKeys extends Model
         'revoked_at' => 'datetime',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+
     //  protected $hidden = ['key_hash'];
 
-      public function isActive(): bool
+    public function isActive(): bool
     {
-        return $this->status === 'active' && 
-               ($this->expires_at === null || $this->expires_at->isFuture());
+        return $this->status === 'active' &&
+            ($this->expires_at === null || $this->expires_at->isFuture());
     }
 
     public function verifyKey(string $key): bool
@@ -38,7 +51,7 @@ class ApiKeys extends Model
         return Hash::check($key, $this->key_hash);
     }
 
-     public function updateUsage(string $ip = null): void
+    public function updateUsage(string $ip = null): void
     {
         $this->increment('usage_count');
         $this->update([
@@ -47,14 +60,14 @@ class ApiKeys extends Model
         ]);
     }
 
-    public static function generateKeyPair(int $userId, int $companyId, string $environment = 'test'): array
+    public static function generateKeyPair(string $userId, string $companyId, string $environment = 'test'): array
     {
         $publicSuffix = Str::random(32);
         $privateSuffix = Str::random(64);
-        
+
         $publicKey = "pk_{$environment}_{$publicSuffix}";
         $privateKey = "sk_{$environment}_{$privateSuffix}";
-        
+
         return [
             'key_id' => Str::random(32),
             'public_key' => $publicKey,

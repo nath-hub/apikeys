@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('api_keys', function (Blueprint $table) {
             $table->id();
-            $table->string('key_id', 32)->unique();
-            $table->string('key_hash');
+            $table->string('key_id')->unique();
+            $table->string('key_hash');     
 
             // Relations
             $table->string('user_id');
@@ -45,9 +45,9 @@ return new class extends Migration
 
             // Audit
             $table->timestamps();
-            $table->datetime('created_by')->nullable();
+            $table->string('created_by')->nullable();
             $table->timestamp('revoked_at')->nullable();
-            $table->dateTime('revoked_by')->nullable();
+            $table->string('revoked_by')->nullable();
             $table->text('revocation_reason')->nullable();
 
             // Index

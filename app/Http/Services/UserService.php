@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Http\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -47,14 +47,9 @@ class UserService
 
 
     function getUserCompany()
-    {
-        $userId = $this->getUser();
-        if (!$userId) {
-            throw new Exception('Utilisateur non trouvé');
-        }
-
+    { 
         try {
-            $response = $this->httpClient->get($this->userServiceUrl . '/me/company', [
+            $response = $this->httpClient->get($this->userServiceUrl . '/api/entreprises/me/company', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . request()->bearerToken(),
                     'Content-Type' => 'application/json',
