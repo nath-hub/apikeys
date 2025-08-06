@@ -21,8 +21,7 @@ class ApiKeyUsageLogRequest extends FormRequest
      */
      public function rules(): array
     {
-        return [
-            // 'api_key_id' => 'required|uuid|exists:api_keys,id',
+        return [ 
             'user_id' => 'nullable|uuid',
             'public_key_id' => 'string|max:255',
             'private_key_id' => 'string|max:255',
