@@ -8,13 +8,339 @@
         },
         "version": "1.0.0"
     },
-    "servers": [
-        {
-            "url": "http://localhost:8002",
-            "description": "User Service Server"
-        }
-    ],
     "paths": {
+        "/api-usage-logs": {
+            "get": {
+                "tags": [
+                    "API Usage Logs"
+                ],
+                "summary": "Lister les journaux d'utilisation API",
+                "description": "Retourne une liste paginée des logs API",
+                "operationId": "8d7b8852c0c27cb64f96522d912e22f1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page de pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Nombre d’éléments par page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des journaux",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "API Usage Logs"
+                ],
+                "summary": "Créer un journal d’utilisation d’API",
+                "description": "Enregistre les détails d'une requête API pour analyse ou audit.",
+                "operationId": "ff6587e56e5c3e6ab3181c1dda51c18c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "public_key_id",
+                                    "private_key_id",
+                                    "http_method",
+                                    "ip_address",
+                                    "environment",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                    },
+                                    "public_key_id": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "pk_live_1234"
+                                    },
+                                    "private_key_id": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "sk_live_1234"
+                                    },
+                                    "action": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "create_payment"
+                                    },
+                                    "endpoint": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "/api/payments"
+                                    },
+                                    "http_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "GET",
+                                            "POST",
+                                            "PUT",
+                                            "DELETE",
+                                            "PATCH",
+                                            "OPTIONS",
+                                            "HEAD"
+                                        ],
+                                        "example": "POST"
+                                    },
+                                    "request_uuid": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                                    },
+                                    "request_id": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "req_987654321"
+                                    },
+                                    "ip_address": {
+                                        "type": "string",
+                                        "format": "ipv4",
+                                        "example": "102.244.123.1"
+                                    },
+                                    "user_agent": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "PostmanRuntime/7.31.1"
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "maxLength": 5,
+                                        "example": "CM"
+                                    },
+                                    "environment": {
+                                        "type": "string",
+                                        "enum": [
+                                            "test",
+                                            "live",
+                                            "sandbox"
+                                        ],
+                                        "example": "live"
+                                    },
+                                    "response_time_ms": {
+                                        "type": "integer",
+                                        "maximum": 300000,
+                                        "minimum": 0,
+                                        "example": 240
+                                    },
+                                    "response_status_code": {
+                                        "type": "integer",
+                                        "maximum": 599,
+                                        "minimum": 100,
+                                        "example": 200
+                                    },
+                                    "request_size_bytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 512
+                                    },
+                                    "response_size_bytes": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "example": 2048
+                                    },
+                                    "signature_valid": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "source_service": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "payment_service"
+                                    },
+                                    "request_headers": {
+                                        "type": "object",
+                                        "example": {
+                                            "Authorization": "Bearer sk_live_xxx"
+                                        }
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "maximum": 999999999.99,
+                                        "minimum": 0,
+                                        "example": 10000.5
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "maxLength": 3,
+                                        "example": "XAF"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "success",
+                                            "failed",
+                                            "blocked",
+                                            "rate_limited"
+                                        ],
+                                        "example": "success"
+                                    },
+                                    "is_suspicious": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "error_message": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "example": "Invalid signature"
+                                    },
+                                    "error_code": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "401"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Yaoundé"
+                                    },
+                                    "region": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Centre"
+                                    },
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "maximum": 90,
+                                        "minimum": -90,
+                                        "example": 3.848
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "maximum": 180,
+                                        "minimum": -180,
+                                        "example": 11.5021
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Journal enregistré avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/api-usage-logs/{log}": {
+            "get": {
+                "tags": [
+                    "API Usage Logs"
+                ],
+                "summary": "Afficher un journal d’usage",
+                "operationId": "5f39cd9f422ea348d824125faecdf50f",
+                "parameters": [
+                    {
+                        "name": "log",
+                        "in": "path",
+                        "description": "ID du log",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "f4d6eb57-45f8-4b89-9d12-cae4c56877f4"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du journal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Non trouvé"
+                    }
+                }
+            }
+        },
         "/api/apikeys": {
             "get": {
                 "tags": [
@@ -336,6 +662,10 @@
         {
             "name": "API Keys",
             "description": "Gestion des clés API pour l'authentification"
+        },
+        {
+            "name": "API Usage Logs",
+            "description": "API Usage Logs"
         }
     ]
 }

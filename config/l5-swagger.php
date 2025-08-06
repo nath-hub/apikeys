@@ -14,6 +14,12 @@ return [
                  */
                 'api' => 'api/documentation',
             ],
+            'servers' => [
+                [
+                    'url' => env('APP_URL', 'http://localhost:8000'),
+                    'description' => 'Base URL depuis .env',
+                ],
+            ],
             'paths' => [
                 /*
                  * Edit to include full URL in ui for assets
@@ -21,8 +27,8 @@ return [
                 'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
 
                 /*
-                * Edit to set path where swagger ui assets should be stored
-                */
+                 * Edit to set path where swagger ui assets should be stored
+                 */
                 'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
 
                 /*
@@ -108,16 +114,16 @@ return [
              * @link https://zircote.github.io/swagger-php/reference/processors.html
              */
             'default_processors_configuration' => [
-            /** Example */
-            /**
-             * 'operationId.hash' => true,
-             * 'pathFilter' => [
-             * 'tags' => [
-             * '/pets/',
-             * '/store/',
-             * ],
-             * ],.
-             */
+                /** Example */
+                /**
+                 * 'operationId.hash' => true,
+                 * 'pathFilter' => [
+                 * 'tags' => [
+                 * '/pets/',
+                 * '/store/',
+                 * ],
+                 * ],.
+                 */
             ],
 
             /**
@@ -167,7 +173,7 @@ return [
 
         /*
          * API security definitions. Will be generated into documentation file.
-        */
+         */
         'securityDefinitions' => [
             'securitySchemes' => [
                 /*
