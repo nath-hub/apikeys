@@ -149,8 +149,10 @@ class ApiKeysController extends Controller
      *                 type="array", 
      *                 @OA\Items(type="string"),
      *                 example={"192.168.1.1", "10.0.0.0/24"}
-     *             )
-     *         )
+     *             ),
+     *             @OA\Property(property="entreprise_id", type="uuid", example="123e4567-e89b-12d3-a456-426614174000"),
+     *        )
+     * 
      *     ),
      *     @OA\Response(
      *         response=201,
@@ -191,7 +193,7 @@ class ApiKeysController extends Controller
 
         $user = $request->user();
 
-        $company = $this->userService->getUserCompany(); // Assuming relationship exists
+        $company = $this->userService->getUserCompany($request); // Assuming relationship exists
 
         $result = $this->apiKeyService->createKeyPair($user, $company, $request->all());
 

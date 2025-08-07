@@ -2,42 +2,53 @@
 
 namespace App\Http\Services;
 
+use App\Helpers\InternalHttpClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Http\Request;
 
 class UserService
 {
-
-    private $httpClient;
-    private $userServiceUrl;
+ 
+    private InternalHttpClient $httpClient;  
 
     public function __construct()
     {
-        $this->httpClient = new Client();
-        $this->userServiceUrl = env('USER_SERVICE_URL', 'http://127.0.0.1:8001');
+        
+        $bearerToken = request()->bearerToken();
+        $this->httpClient = new InternalHttpClient($bearerToken);
     }
-    public function getUser()
-    { 
+    public function getUser(Request $request)
+    {
         $token = request()->bearerToken();
 
         try {
-            $response = $this->httpClient->post($this->userServiceUrl . '/api/auth/validate', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $token,
-                    'Content-Type' => 'application/json',
-                ],
-                'timeout' => 5,
-            ]);
 
-            $data = json_decode($response->getBody()->getContents(), true);
+             $orderServiceUrl = config('services.services_apikeys.url');
 
-            if (isset($data['user_id'])) {
-                //get entreprise de l'utilisateur
+            $response = $this->httpClient->post(
+                $request,
+                $orderServiceUrl,
+                '/api/auth/validate',
+                ['create:orders']
+            );
+
+            if ($response['success']) {
+                Log::info($response['data']);
+                return $response['data']['user_id'];
             }
 
-            return $data['user_id'] ?? null;
+            return [
+                'valid' => false,
+                'error' => 'Failed to create order',
+                'error_code' => 'API_VERIFICATION_FAILED',
+                'details' => $response['error'],
+                'status_code' => $response['status_code']
+            ];
+
+            
 
         } catch (RequestException $e) {
             Log::error('Erreur validation token: ' . $e->getMessage());
@@ -46,18 +57,32 @@ class UserService
     }
 
 
-    function getUserCompany()
-    { 
+    function getUserCompany(Request $request)
+    {
         try {
-            $response = $this->httpClient->get($this->userServiceUrl . '/api/entreprises/me/company', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . request()->bearerToken(),
-                    'Content-Type' => 'application/json',
-                ],
-                'timeout' => 5,
-            ]);
+            $orderServiceUrl = config('services.services_apikeys.url');
 
-            return json_decode($response->getBody()->getContents(), true);
+            $response = $this->httpClient->post(
+                $request,
+                $orderServiceUrl,
+                '/api/entreprises/me/company',
+                ['create:orders']
+            );
+
+            if ($response['success']) {
+                Log::info($response['data']);
+                return $response['data'];
+            }
+
+            return [
+                'valid' => false,
+                'error' => 'Failed to create order',
+                'error_code' => 'API_VERIFICATION_FAILED',
+                'details' => $response['error'],
+                'status_code' => $response['status_code']
+            ];
+
+            // return json_decode($response->getBody()->getContents(), true);
         } catch (RequestException $e) {
             Log::error('Erreur récupération entreprise: ' . $e->getMessage());
             throw new Exception('Erreur récupération entreprise');

@@ -31,4 +31,16 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+     'services_user' => [
+        'url' => env('USER_INTERFACE', 'http://user-service:8000'),
+    ],
+    
+    'services_apikeys' => [
+        'url' => env('APIKEYS_INTERFACE', 'http://order-service:8001'),
+    ],
+    
+    'services_transactions' => [
+        'url' => env('TRANSACTION_INTERFACE', 'http://inventory-service:8002'),
+    ],
+
 ];

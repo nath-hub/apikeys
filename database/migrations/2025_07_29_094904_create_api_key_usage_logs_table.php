@@ -12,10 +12,8 @@ return new class extends Migration {
     {
         Schema::create('api_key_usage_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-
-
-            // Relations
-            // $table->uuid('api_key_id');
+ 
+            // Relations 
             $table->uuid('user_id')->nullable();
             $table->string('public_key_id')->nullable(); // Clé publique pour identification rapide
             $table->string('private_key_id')->nullable(); // Clé publique pour identification rapide
@@ -62,8 +60,7 @@ return new class extends Migration {
             $table->timestamp('created_at')->index();
             $table->timestamp('processed_at')->nullable(); // Quand le log a été traité
 
-            // Index composites pour les performances
-            $table->index(['api_key_id', 'created_at']);
+            // Index composites pour les performances 
             $table->index(['user_id', 'created_at']);
             $table->index(['user_id', 'action', 'created_at']);
             $table->index(['environment', 'created_at']);
@@ -74,10 +71,7 @@ return new class extends Migration {
             // Index pour analytics
             $table->index(['action', 'status', 'created_at']);
             $table->index(['country_code', 'created_at']);
-
-            // Contraintes de clé étrangère (à adapter selon vos tables)
-            // $table->foreign('api_key_id')->references('id')->on('api_keys')->onDelete('cascade');
-
+ 
         });
     }
 
