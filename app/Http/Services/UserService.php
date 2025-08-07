@@ -26,9 +26,9 @@ class UserService
 
         try {
 
-             $orderServiceUrl = config('services.services_apikeys.url');
+             $orderServiceUrl = config('services.services_user.url');
 
-            $response = $this->httpClient->post(
+            $response = $this->httpClient->get(
                 $request,
                 $orderServiceUrl,
                 '/api/auth/validate',
@@ -60,9 +60,9 @@ class UserService
     function getUserCompany(Request $request)
     {
         try {
-            $orderServiceUrl = config('services.services_apikeys.url');
+            $orderServiceUrl = config('services.services_user.url');
 
-            $response = $this->httpClient->post(
+            $response = $this->httpClient->get(
                 $request,
                 $orderServiceUrl,
                 '/api/entreprises/me/company',
