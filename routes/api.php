@@ -31,7 +31,7 @@ Route::prefix('apikeys/')->middleware('auth:sanctum')->group(function () {
 });
  
 
-// Route::middleware(['auth:api'])->group(function () {
+Route::prefix('apikeys/')->group(function () {
     // Logs d'utilisation
     Route::get('/api-usage-logs', [ApiKeyUsageLogController::class, 'index']);
     Route::post('/api-usage-logs', [ApiKeyUsageLogController::class, 'store']);
@@ -44,7 +44,7 @@ Route::prefix('apikeys/')->middleware('auth:sanctum')->group(function () {
     Route::get('/api-usage-logs/statistics/global', [ApiKeyUsageLogController::class, 'statistics']);
     Route::get('/api-usage-logs/security/suspicious', [ApiKeyUsageLogController::class, 'suspicious']);
     Route::get('/api-usage-logs/analytics/performance', [ApiKeyUsageLogController::class, 'performance']);
-// });
+});
 
 // Routes internes (pour les microservices)
 Route::middleware(['internal_auth'])->group(function () {
