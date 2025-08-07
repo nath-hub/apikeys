@@ -6,10 +6,8 @@ use App\Models\ApiKeys;
 use App\Http\Controllers\Controller;
 use App\Http\Services\ApiKeyService;
 use App\Http\Services\UserService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -72,14 +70,24 @@ class ApiKeysController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ApiKeys::where('user_id', $request->user()->id);
+        $userId = auth()->user()->id;
+ 
+        $query = ApiKeys::where('user_id', $userId);
 
-        if ($request->has('environment')) {
-            $query->where('environment', $request->environment);
+        $request->validate([
+            'environment' => 'nullable|in:test,live,sandbox',
+            'status' => 'nullable|in:active,inactive,revoked,expired',
+        ]);
+
+        $environment = $request->input('environment');
+        $status = $request->input('status');
+
+        if (!empty($environment)) {
+            $query->where('environment', $environment); 
         }
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        if (!empty($status)) {
+            $query->where('status', $status); 
         }
 
         $apiKeys = $query->orderBy('created_at', 'desc')->get();
@@ -100,17 +108,17 @@ class ApiKeysController extends Controller
             ];
         });
 
-        if ($data) {
+        if ($data->count() > 0) {
             return response()->json([
                 'message' => 'Clés API récupérées',
                 'data' => $data
             ]);
         } else {
             return response()->json([
-                'message' => 'Aucune clés API récupérées'
+                'message' => 'Aucune clés API récupérées',
+                'data' => []
             ]);
         }
-
 
     }
 
@@ -261,12 +269,13 @@ class ApiKeysController extends Controller
         if (!$apiKey) {
             return response()->json(['message' => 'Clé API non trouvée', 'status' => 404], 404);
         }
- 
+
 
         $success = $this->apiKeyService->revokeKey(
             $keyId,
             $user,
-            $request->input('reason'), $apiKey
+            $request->input('reason'),
+            $apiKey
         );
 
         if (!$success) {
@@ -344,10 +353,10 @@ class ApiKeysController extends Controller
                 ]);
             }
 
-            
+
             // 4. Vérifier les permissions pour l'action demandée
             $permissions = $publicApiKey->permissions ?? $this->getDefaultPermissions();
-            
+
             if ($request->action && !$this->checkActionPermission($permissions, $request->action)) {
                 return response()->json([
                     'valid' => false,
@@ -361,7 +370,7 @@ class ApiKeysController extends Controller
             if ($publicApiKey->expires_at && $publicApiKey->expires_at->isPast()) {
                 // Marquer comme expiré
                 $publicApiKey->update(['status' => 'expired']);
-                
+
                 return response()->json([
                     'valid' => false,
                     'error' => 'API key expired',
@@ -369,7 +378,7 @@ class ApiKeysController extends Controller
                     'status' => 4003
                 ]);
             }
-             
+
             // 6. Enregistrer l'utilisation (pour les stats et rate limiting) 
 
             return response()->json([
@@ -407,8 +416,8 @@ class ApiKeysController extends Controller
         return isset($permissions[$resource][$operation]) && $permissions[$resource][$operation] === true;
     }
 
-   
- 
+
+
     private function getRemainingRateLimit(ApiKeys $apiKey): int
     {
         // Implémentation simple - à adapter selon vos besoins

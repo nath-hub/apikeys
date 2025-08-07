@@ -28,7 +28,7 @@ return new class extends Migration {
             // Informations techniques
             $table->ipAddress('ip_address');
             $table->text('user_agent')->nullable();
-            $table->string('country_code', 5)->nullable(); // Code pays basé sur IP
+            $table->string('country_code')->nullable(); // Code pays basé sur IP
             $table->string('environment', 20)->default('test'); // test, live, sandbox
 
             // Métadonnées de performance

@@ -32,7 +32,7 @@ class ApiKeyUsageLogRequest extends FormRequest
             'request_id' => 'nullable|string|max:255',
             'ip_address' => 'required|ip',
             'user_agent' => 'nullable|string|max:1000',
-            'country_code' => 'nullable|string|size:5',
+            'country_code' => 'nullable|string',
             'environment' => 'required|string|in:test,live,sandbox',
             'response_time_ms' => 'nullable|integer|min:0|max:300000', // Max 5 minutes
             'response_status_code' => 'nullable|integer|min:100|max:599',
