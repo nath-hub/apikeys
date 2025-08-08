@@ -9,14 +9,14 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/apikeys/api-usage-logs": {
+        "/api/apikeys/api-usage-logs": {
             "get": {
                 "tags": [
                     "API Usage Logs"
                 ],
                 "summary": "Lister les journaux d'utilisation API",
                 "description": "Retourne une liste paginée des logs API",
-                "operationId": "43bf1df97aec3c8deeb7993f5ba5a1ac",
+                "operationId": "2b64d02b51233e8ed4658b203f129e38",
                 "parameters": [
                     {
                         "name": "page",
@@ -75,7 +75,7 @@
                 ],
                 "summary": "Créer un journal d’utilisation d’API",
                 "description": "Enregistre les détails d'une requête API pour analyse ou audit.",
-                "operationId": "063a4bacf78be674e4b92f0d8e97fd09",
+                "operationId": "508b6fd0dfe23530871eaf8fc9bdfa01",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -304,13 +304,13 @@
                 }
             }
         },
-        "/apikeys/api-usage-logs/{log}": {
+        "/api/apikeys/api-usage-logs/{log}": {
             "get": {
                 "tags": [
                     "API Usage Logs"
                 ],
                 "summary": "Afficher un journal d’usage",
-                "operationId": "ca553a37386860cde76197072944da62",
+                "operationId": "d7de2d812b46a69f9410d20f6dd5de0d",
                 "parameters": [
                     {
                         "name": "log",

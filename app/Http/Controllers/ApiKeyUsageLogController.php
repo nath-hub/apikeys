@@ -16,7 +16,7 @@ class ApiKeyUsageLogController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/apikeys/api-usage-logs",
+     *     path="/api/apikeys/api-usage-logs",
      *     tags={"API Usage Logs"},
      *     summary="Lister les journaux d'utilisation API",
      *     description="Retourne une liste paginée des logs API",
@@ -55,11 +55,7 @@ class ApiKeyUsageLogController extends Controller
         // Filtres
         if ($request->filled('user_id')) {
             $query->byUser($request->user_id);
-        }
-
-        // if ($request->filled('api_key_id')) {
-        //     $query->byApiKey($request->api_key_id);
-        // }
+        } 
 
         if ($request->filled('action')) {
             $query->byAction($request->action);
@@ -171,7 +167,7 @@ class ApiKeyUsageLogController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/apikeys/api-usage-logs",
+     *     path="/api/apikeys/api-usage-logs",
      *     tags={"API Usage Logs"},
      *     summary="Créer un journal d’utilisation d’API",
      *     description="Enregistre les détails d'une requête API pour analyse ou audit.",
@@ -239,7 +235,7 @@ class ApiKeyUsageLogController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/apikeys/api-usage-logs/{log}",
+     *     path="/api/apikeys/api-usage-logs/{log}",
      *     tags={"API Usage Logs"},
      *     summary="Afficher un journal d’usage",
      *     @OA\Parameter(
