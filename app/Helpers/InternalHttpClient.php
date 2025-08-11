@@ -237,7 +237,7 @@ class InternalHttpClient
             ]);
 
             $apikeysServiceUrl = config('services.services_apikeys.url', 'http://apikeys-service');
-            $logEndpoint = rtrim($apikeysServiceUrl, '/') . '/api/api-usage-logs';
+            $logEndpoint = rtrim($apikeysServiceUrl, '/') . '/api/apikeys/api-usage-logs';
 
             // Headers pour la requête de log
             $logHeaders = [
