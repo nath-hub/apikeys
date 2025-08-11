@@ -269,7 +269,8 @@ class InternalHttpClient
             Log::debug('API usage log sent successfully', [
                 'status_code' => $response->getStatusCode(),
                 'log_endpoint' => $logEndpoint,
-                'response' => $decoded
+                'response' => $decoded,
+                'data' => $logData
             ]);
 
 
