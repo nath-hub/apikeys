@@ -157,6 +157,7 @@ class InternalHttpClient
                 $response = Http::timeout(3)->get("http://ipapi.co/{$ip}/json/");
 
                 if ($response->successful()) {
+                    Log::info($response->json());
                     $data = $response->json();
                     return [
                         'country_code' => $data['country_code'] ?? null,
