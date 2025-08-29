@@ -155,7 +155,7 @@ class InternalHttpClient
             try {
                 // Utiliser un service de géolocalisation (exemple avec ipapi.co)
                 $response = Http::timeout(3)->get("http://ipapi.co/{$ip}/json/");
-                Log::info($response->json());
+
                 if ($response->successful()) {
                     Log::info($response->json());
                     $data = $response->json();

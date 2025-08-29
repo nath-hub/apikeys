@@ -63,6 +63,33 @@ return [
             ]) : [],
         ],
 
+
+        'mysql_prod' => [
+            'driver' => 'mysql',
+            'host' => env('DB_PROD_HOST', '127.0.0.1'),
+            'port' => env('DB_PROD_PORT', '3306'),
+            'database' => env('DB_PROD_DATABASE', 'aggregator_prod'),
+            'username' => env('DB_PROD_USERNAME', 'forge'),
+            'password' => env('DB_PROD_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+        'mysql_sandbox' => [
+            'driver' => 'mysql',
+            'host' => env('DB_SANDBOX_HOST', '127.0.0.1'),
+            'port' => env('DB_SANDBOX_PORT', '3306'),
+            'database' => env('DB_SANDBOX_DATABASE', 'aggregator_sandbox'),
+            'username' => env('DB_SANDBOX_USERNAME', 'forge'),
+            'password' => env('DB_SANDBOX_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
@@ -125,7 +152,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

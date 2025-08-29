@@ -21,7 +21,7 @@ class ApiKeyUsageLogRequest extends FormRequest
      */
      public function rules(): array
     {
-        return [ 
+        return [
             'user_id' => 'nullable|uuid',
             'public_key_id' => 'string|max:255',
             'private_key_id' => 'string|max:255',
@@ -33,7 +33,7 @@ class ApiKeyUsageLogRequest extends FormRequest
             'ip_address' => 'required|ip',
             'user_agent' => 'nullable|string|max:1000',
             'country_code' => 'nullable|string',
-            'environment' => 'required|string|in:test,live,sandbox',
+            'environment' => 'required|string|in:prod,sandbox',
             'response_time_ms' => 'nullable|integer|min:0|max:300000', // Max 5 minutes
             'response_status_code' => 'nullable|integer|min:100|max:599',
             'request_size_bytes' => 'nullable|integer|min:0',

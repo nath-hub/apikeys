@@ -12,8 +12,8 @@ return new class extends Migration {
     {
         Schema::create('api_key_usage_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
- 
-            // Relations 
+
+            // Relations
             $table->uuid('user_id')->nullable();
             $table->string('public_key_id')->nullable(); // Clé publique pour identification rapide
             $table->string('private_key_id')->nullable(); // Clé publique pour identification rapide
@@ -29,7 +29,7 @@ return new class extends Migration {
             $table->ipAddress('ip_address');
             $table->text('user_agent')->nullable();
             $table->string('country_code')->nullable(); // Code pays basé sur IP
-            $table->string('environment', 20)->default('test'); // test, live, sandbox
+            $table->enum('environment', ['prod', 'sandbox'])->default('sandbox'); // test, live, sandbox
 
             // Métadonnées de performance
             $table->integer('response_time_ms')->nullable(); // Temps de réponse en millisecondes
@@ -60,7 +60,7 @@ return new class extends Migration {
             $table->timestamp('created_at')->index();
             $table->timestamp('processed_at')->nullable(); // Quand le log a été traité
 
-            // Index composites pour les performances 
+            // Index composites pour les performances
             $table->index(['user_id', 'created_at']);
             $table->index(['user_id', 'action', 'created_at']);
             $table->index(['environment', 'created_at']);
@@ -71,7 +71,7 @@ return new class extends Migration {
             // Index pour analytics
             $table->index(['action', 'status', 'created_at']);
             $table->index(['country_code', 'created_at']);
- 
+
         });
     }
 
