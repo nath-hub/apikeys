@@ -194,7 +194,7 @@ class ApiKeysController extends Controller
             'description' => 'required|string|max:500',
             'environment' => 'required|in:test,live,sandbox',
             'permissions' => 'required|array',
-            'ip_whitelist' => 'required|array',
+            'ip_whitelist' => 'nullable|array',
             'ip_whitelist.*' => 'ip',
             'entreprise_id' => 'required|string|exists:entreprises,id'
         ]);
